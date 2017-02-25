@@ -7,15 +7,16 @@ from keras.layers import Dense, Activation, LSTM
 from keras.optimizers import RMSprop
 from random import randint
 
+# data import
 df = pd.read_csv("./data/trump_tweets.csv", encoding="latin-1")
 sequences = df["Tweet_Text"]
 
 chars = sorted(list(set(sequences.str.cat())))
 char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
-
 max_len = max(sequences.str.len())
 
+# padding all tweets to the same length
 padd_char = "^"
 if padd_char in char_indices:
     warn(padd_char + " is already in the corpus. Try to pick another one for better results.")
@@ -27,6 +28,7 @@ padd = max_len - sequences.str.len()
 padd = padd.apply(lambda x: padd_char * x)
 sequences += padd
 
+# building sequences based on the twwets
 seq_len = 51
 step = 2
 n_seq_by_tweet = math.floor((max_len - seq_len) / step)
@@ -36,6 +38,7 @@ next_char = [seq[-1] for seq in sequences]
 sequences = [seq[:-1] for seq in sequences]
 seq_len = len(sequences[0])
 
+# vectorization
 X = np.zeros((len(sequences), seq_len, len(chars)), dtype=np.bool)
 y = np.zeros((len(sequences), len(chars)), dtype=np.bool)
 for i, seq in enumerate(sequences):
@@ -43,6 +46,7 @@ for i, seq in enumerate(sequences):
         X[i, t, char_indices[char]] = 1
     y[i, char_indices[next_char[i]]] = 1
 
+# keras model building
 model = Sequential()
 model.add(LSTM(128, input_shape=(seq_len, len(chars))))
 model.add(Dense(len(chars)))
@@ -53,12 +57,13 @@ model.compile(loss='categorical_crossentropy',
               optimizer=optimizer,
               metrics=['accuracy'])
 
-
+# get the character and the index of the softmax predictions
+# the chosen character is based on the probs given by the softmax
 def random_next_char(probs, dic):
     drawn = np.random.multinomial(1, probs, 1)
     return dic[np.argmax(drawn)], np.argmax(drawn)
 
-
+# training + model saving + printing of one example at each epoch
 for epoch in range(60):
     print()
     print("-" * 10 + " Training #" + str(epoch) + " " + "-" * 10)
