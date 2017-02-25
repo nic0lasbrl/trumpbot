@@ -13,3 +13,7 @@ include
 .idea/modules.xml
 .idea/trumpbot.iml
 .idea/workspace.xml
+
+*.ipynb
+
+
