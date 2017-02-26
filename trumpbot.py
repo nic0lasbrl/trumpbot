@@ -1,11 +1,12 @@
-import pandas as pd
-from warnings import warn
 import math
-import numpy as np
-from keras.models import Sequential
-from keras.layers import Dense, Activation, LSTM
-from keras.optimizers import RMSprop
 from random import randint
+from warnings import warn
+
+import numpy as np
+import pandas as pd
+from keras.layers import Dense, Activation, LSTM
+from keras.models import Sequential
+from keras.optimizers import RMSprop
 
 # data import
 df = pd.read_csv("./data/trump_tweets.csv", encoding="latin-1")
@@ -25,14 +26,14 @@ else:
     indices_char[len(chars)] = padd_char
     chars += [padd_char]
 padd = max_len - sequences.str.len()
-padd = padd.apply(lambda x: padd_char * x)
+padd = padd.apply(lambda i: padd_char * i)
 sequences += padd
 
 # building sequences based on the twwets
 seq_len = 51
 step = 2
 n_seq_by_tweet = math.floor((max_len - seq_len) / step)
-sequences = sequences.apply(lambda x: [x[i * step:(i * step + seq_len)] for i in range(n_seq_by_tweet + 1)])
+sequences = sequences.apply(lambda s: [s[i * step: i * step + seq_len] for i in range(n_seq_by_tweet + 1)])
 sequences = [seq for list_ in sequences for seq in list_]
 next_char = [seq[-1] for seq in sequences]
 sequences = [seq[:-1] for seq in sequences]
@@ -57,11 +58,13 @@ model.compile(loss='categorical_crossentropy',
               optimizer=optimizer,
               metrics=['accuracy'])
 
+
 # get the character and the index of the softmax predictions
 # the chosen character is based on the probs given by the softmax
-def random_next_char(probs, dic):
-    drawn = np.random.multinomial(1, probs, 1)
+def random_next_char(probas, dic):
+    drawn = np.random.multinomial(1, probas, 1)
     return dic[np.argmax(drawn)], np.argmax(drawn)
+
 
 # training + model saving + printing of one example at each epoch
 for epoch in range(60):
