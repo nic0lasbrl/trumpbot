@@ -30,8 +30,8 @@ padd = padd.apply(lambda i: padd_char * i)
 sequences += padd
 
 # building sequences based on the twwets
-seq_len = 51
-step = 2
+seq_len = 100
+step = 100
 n_seq_by_tweet = math.floor((max_len - seq_len) / step)
 sequences = sequences.apply(lambda s: [s[i * step: i * step + seq_len] for i in range(n_seq_by_tweet + 1)])
 sequences = [seq for list_ in sequences for seq in list_]
