@@ -30,8 +30,8 @@ padd = padd.apply(lambda i: padd_char * i)
 sequences += padd
 
 # building sequences based on the twwets
-seq_len = 51
-step = 2
+seq_len = 100
+step = 100
 n_seq_by_tweet = math.floor((max_len - seq_len) / step)
 sequences = sequences.apply(lambda s: [s[i * step: i * step + seq_len] for i in range(n_seq_by_tweet + 1)])
 sequences = [seq for list_ in sequences for seq in list_]
@@ -49,7 +49,7 @@ for i, seq in enumerate(sequences):
 
 # keras model building
 model = Sequential()
-model.add(LSTM(128, input_shape=(seq_len, len(chars))))
+model.add(LSTM(128, input_shape=(None, len(chars))))
 model.add(Dense(len(chars)))
 model.add(Activation('softmax'))
 
@@ -62,7 +62,21 @@ model.compile(loss='categorical_crossentropy',
 # get the character and the index of the softmax predictions
 # the chosen character is based on the probs given by the softmax
 def random_next_char(probas, dic):
-    drawn = np.random.multinomial(1, probas, 1)
+    """
+        Predicts the next character thanks to the probas given by the softmax function
+        :param probas: probas given by the softmax function
+        :param dic: dictionary which gives the character corresponding to a position
+        :return: the next character and the one hot position
+    """
+    probs = probas.reshape(probas.shape[1])
+    probs = np.round(probs, 5)
+    probs = np.maximum(probs, 0)
+    probs[-1] = 1.0 - np.sum(probs[:-1])
+    try:
+        drawn = np.random.multinomial(1, probs, 1)
+    except ValueError:
+        print("Sum of softmax probas > 1 (Python rounding error), picking the char with the top proba ...")
+        drawn = probs
     return dic[np.argmax(drawn)], np.argmax(drawn)
 
 
@@ -74,14 +88,13 @@ for epoch in range(60):
     model.save("data/models/model-" + str(epoch))
     print("Random sentence :")
     print()
-    x = X[randint(0, len(chars) - 1), :, :]
-    x = np.concatenate((x[1:, :], np.zeros((1, len(chars)))), axis=0)
-    x[-1, randint(0, len(chars))] = 1
+    x = np.zeros((1, len(chars)))
+    x[-1, randint(0, len(chars) - 1)] = 1
     sentence = ''
     for i in range(max_len):
-        probs = model.predict(x.reshape((1, seq_len, len(chars))))
+        probs = model.predict(x.reshape((1, x.shape[0], len(chars))))
         next_char, pos = random_next_char(probs, indices_char)
         sentence += next_char
-        x = np.concatenate((x[1:, :], np.zeros((1, len(chars)))), axis=0)
+        x = np.concatenate((x[-seq_len + 1:, :], np.zeros((1, len(chars)))), axis=0)
         x[-1, pos] = 1
     print(sentence)
