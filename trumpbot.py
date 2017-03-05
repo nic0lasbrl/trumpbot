@@ -4,12 +4,11 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-from keras.layers import Dense, Activation, LSTM
+from keras.layers import Dense, Activation, LSTM, Dropout, GRU
 from keras.models import Sequential
-from keras.optimizers import RMSprop
 
 # data import
-df = pd.read_csv("./data/trump_tweets.csv", encoding="latin-1")
+df = pd.read_csv("./data/trump_tweets.csv", encoding="mbcs")
 sequences = df["Tweet_Text"]
 
 chars = sorted(list(set(sequences.str.cat())))
@@ -49,13 +48,15 @@ for i, seq in enumerate(sequences):
 
 # keras model building
 model = Sequential()
-model.add(LSTM(128, input_shape=(None, len(chars))))
+model.add(GRU(256, input_shape=(None, len(chars)), return_sequences=True))
+model.add(Dropout(0.2))
+model.add(GRU(256))
+model.add(Dropout(0.2))
 model.add(Dense(len(chars)))
 model.add(Activation('softmax'))
 
-optimizer = RMSprop(lr=0.01)
 model.compile(loss='categorical_crossentropy',
-              optimizer=optimizer,
+              optimizer='adam',
               metrics=['accuracy'])
 
 
