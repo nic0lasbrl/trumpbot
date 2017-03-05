@@ -4,7 +4,7 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-from keras.layers import Dense, Activation, LSTM, Dropout, GRU
+from keras.layers import Dense, Activation, Dropout, GRU
 from keras.models import Sequential
 
 # data import
