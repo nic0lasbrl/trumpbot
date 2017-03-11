@@ -10,7 +10,7 @@ from keras.models import Sequential
 from utils import *
 
 # data import
-df = pd.read_csv("./data/trump_tweets.csv", encoding="mbcs")
+df = pd.read_csv("./data/trump_tweets.csv", encoding="latin-1")
 sequences = df["Tweet_Text"]
 
 chars = sorted(list(set(sequences.str.cat())))
