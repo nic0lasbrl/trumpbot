@@ -1,6 +1,7 @@
 import math
 import string
-from random import randint, choice
+import pickle
+from random import choice
 
 import numpy as np
 import pandas as pd
@@ -18,7 +19,7 @@ char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # building sequences based on the tweets + padding
-seq_len = 50
+seq_len = 100
 step = 2
 
 padd_char_end = "^"
@@ -37,6 +38,17 @@ sequences = sequences.apply(lambda s: [s[i * step: i * step + seq_len + 1] for i
 sequences = [seq for list_ in sequences for seq in list_]
 next_char = [seq[-1] for seq in sequences]
 sequences = [seq[:-1] for seq in sequences]
+
+# save model metadata
+meta_data_dic = {"chars": chars,
+                 "char_indices": char_indices,
+                 "indices_char": indices_char,
+                 "seq_len": seq_len,
+                 "padd_char_st": padd_char_st,
+                 "padd_char_end": padd_char_end,
+                 "max_len": max_len}
+pickle.dump(meta_data_dic, open("./data/models/meta_data_dic.p", "wb"))
+
 
 # vectorization
 X = np.zeros((len(sequences), seq_len, len(chars)), dtype=np.bool)
@@ -67,7 +79,6 @@ for epoch in range(60):
     hist = model.fit(X, y, batch_size=128, nb_epoch=1)
     model.save("data/models/model-" + str(epoch) + ".h5")
     print("Random sentence :")
-    print()
     x = np.zeros((seq_len, len(chars)))
     x[:-1, char_indices[padd_char_st]] = 1
     sentence = choice(string.ascii_uppercase)

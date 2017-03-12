@@ -14,7 +14,8 @@ include
 .idea/trumpbot.iml
 .idea/workspace.xml
 
-*.ipynb
-
-
 /venv/
+.ipynb_checkpoints/
+__pycache__/
+
+/trumpbot.ipynb
