@@ -15,7 +15,7 @@ def add_char_or_warn(char, chars, char_indices, indices_char):
         chars += [char]
 
 
-def random_next_char(probas, dic):
+def random_next_char(probas, dic, verbose=True):
     """
         Predicts the next character thanks to the probas given by the softmax function
         :param probas: probas given by the softmax function
@@ -29,6 +29,7 @@ def random_next_char(probas, dic):
     try:
         drawn = np.random.multinomial(1, probs, 1)
     except ValueError:
-        print("Sum of softmax probas > 1 (Python rounding error), picking the char with the top proba ...")
+        if verbose:
+            print("Sum of softmax probas > 1 (Python rounding error), picking the char with the top proba ...")
         drawn = probs
     return dic[np.argmax(drawn)], np.argmax(drawn)
