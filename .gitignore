@@ -8,7 +8,7 @@ include
 # Mac OS X custom attribute files
 .DS_Store
 
-.idea
+.idea/
 .idea/misc.xml
 .idea/modules.xml
 .idea/trumpbot.iml
